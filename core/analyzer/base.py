@@ -3,5 +3,5 @@ from abc import ABC, abstractmethod
 
 class LLM(ABC):
     @abstractmethod
-    def generate(self, prompt: str) -> str:
+    def complete(self, prompt: str) -> str:
         pass

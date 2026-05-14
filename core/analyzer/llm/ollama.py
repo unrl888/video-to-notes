@@ -1,4 +1,4 @@
-from base import LLM
+from core.analyzer.base import LLM
 import ollama
 
 

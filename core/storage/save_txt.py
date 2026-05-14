@@ -1,4 +1,4 @@
-from base import Saver
+from core.storage.base import Saver
 
 
 class SaverTXT(Saver):
