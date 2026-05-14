@@ -4,5 +4,3 @@ ollama
 fastapi
 uvicorn[standard]
 youtube-transcript-api
-yt-dlp
-requests
