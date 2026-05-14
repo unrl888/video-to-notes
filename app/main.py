@@ -1,14 +1,10 @@
-from core.extractor.subtitles import Subtitles
-from core.storage.save_txt import SaverTXT
+from fastapi import FastAPI
+from app.api import router
 
-
-def main(url):
-    sub = Subtitles(url, "ru")
-    text = sub.get_text()
-    s = SaverTXT("test")
-    s.save(text)
+app = FastAPI()
+app.include_router(router)
 
 
 if __name__ == "__main__":
-    url = "https://www.youtube.com/watch?v=1c-dp71awsI"
-    main(url)
+    import uvicorn
+    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)

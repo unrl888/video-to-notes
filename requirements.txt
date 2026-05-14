@@ -1,4 +1,8 @@
-yt-dlp
-requests
 anthropic
 python-dotenv
+ollama
+fastapi
+uvicorn[standard]
+youtube-transcript-api
+yt-dlp
+requests
