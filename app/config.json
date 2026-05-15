@@ -1,0 +1,19 @@
+{
+  "default_prompt": "Analyze this text and return a brief, clear summary",
+  "default_format": "markdown",
+  "format_hints": {
+    "markdown": "Format the response in Markdown: use ## headings, - bullet lists, **bold** for key terms.",
+    "txt": "Return the response as plain text without any markup.",
+    "json": "Return the response strictly as JSON with no extra text: {\"title\": \"...\", \"summary\": \"...\", \"key_points\": [\"...\", \"...\"]}"
+  },
+  "providers": {
+    "ollama": {
+      "models": [],
+      "default": "qwen2.5:7b"
+    },
+    "claude": {
+      "models": ["claude-sonnet-4-5", "claude-haiku-4-5-20251001"],
+      "default": "claude-sonnet-4-5"
+    }
+  }
+}
