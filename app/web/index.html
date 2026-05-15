@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoNote</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- UI language — fixed top-right -->
+  <div class="ui-lang-widget">
+    <button class="ui-lang-btn active" data-ui-lang="en">EN</button>
+    <button class="ui-lang-btn" data-ui-lang="ru">RU</button>
+  </div>
+
+  <!-- Chat messages (hidden initially) -->
+  <div class="chat-area" id="chat-area">
+    <div class="messages" id="messages"></div>
+  </div>
+
+  <!-- Stage: greeting + input — centers on empty, sticks to bottom in chat -->
+  <div class="stage" id="stage">
+
+    <div class="greeting" id="greeting">
+      <span class="greeting-mark">✦</span>
+      <span class="greeting-text" data-i18n="greeting"></span>
+    </div>
+
+    <div class="input-section">
+    <div class="input-inner">
+
+      <!-- Template chips -->
+      <div class="chips-row">
+        <button class="chip active" data-prompt="Analyze this text and return a brief, clear summary" data-i18n="chip_summary"></button>
+        <button class="chip" data-prompt="Extract the key points from the text as a numbered list" data-i18n="chip_keypoints"></button>
+        <button class="chip" data-prompt="Create detailed notes from the text organized by topic" data-i18n="chip_notes"></button>
+        <button class="chip" data-prompt="custom" data-i18n="chip_custom"></button>
+      </div>
+
+      <!-- Input box -->
+      <div class="input-box">
+
+        <!-- Custom prompt (shown only when Custom chip active) -->
+        <textarea
+          id="prompt-input"
+          class="prompt-area hidden"
+          rows="2"
+          data-i18n-placeholder="placeholder_prompt"
+        ></textarea>
+
+        <!-- Custom subtitle lang (shown only when + selected) -->
+        <input
+          id="lang-custom-input"
+          type="text"
+          class="lang-custom hidden"
+          data-i18n-placeholder="placeholder_lang"
+          maxlength="10"
+          autocomplete="off"
+        />
+
+        <!-- URL field -->
+        <input
+          id="url-input"
+          type="url"
+          class="url-field"
+          placeholder="https://youtube.com/watch?v=..."
+          autocomplete="off"
+        />
+
+        <!-- Controls row -->
+        <div class="input-controls">
+          <!-- Model selector -->
+          <div class="model-wrap">
+            <div class="provider-toggle">
+              <button class="provider-btn active" data-provider="ollama">Ollama</button>
+              <button class="provider-btn" data-provider="claude">Claude</button>
+            </div>
+            <select id="model-select"></select>
+          </div>
+
+          <div style="flex:1"></div>
+
+          <!-- Send -->
+          <button id="generate-btn" class="send-btn">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M2 8h12M9 3l5 5-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div><!-- /input-controls -->
+      </div><!-- /input-box -->
+
+      <!-- Params row (under input box) -->
+      <div class="params-row">
+        <div class="param-group-inline">
+          <span class="param-label" data-i18n="label_subtitle_lang"></span>
+          <div class="sub-lang-toggle">
+            <button class="tok active" data-sub-lang="en">EN</button>
+            <button class="tok" data-sub-lang="ru">RU</button>
+            <button class="tok" data-sub-lang="custom">+</button>
+          </div>
+        </div>
+        <div class="param-group-inline">
+          <span class="param-label" data-i18n="label_format"></span>
+          <div class="format-toggle">
+            <button class="tok active" data-format="markdown">MD</button>
+            <button class="tok" data-format="txt">TXT</button>
+            <button class="tok" data-format="json">JSON</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ollama warning -->
+      <div id="ollama-warning" class="ollama-warning hidden" data-i18n="warn_ollama_down"></div>
+
+    </div><!-- /input-inner -->
+    </div><!-- /input-section -->
+
+  </div><!-- /stage -->
+
+</div><!-- /app -->
+<script src="app.js"></script>
+</body>
+</html>
