@@ -14,6 +14,13 @@ def is_ollama_running() -> bool:
         return False
 
 
+def list_ollama_models() -> list[str]:
+    try:
+        return [m.model for m in ollama_client.list().models]
+    except Exception:
+        return []
+
+
 def create_llm(provider: str, model: str | None) -> LLM:
     chosen = model or CONFIG["providers"][provider]["default"]
     if provider == "claude":
@@ -27,7 +34,8 @@ def build_prompt(prompt: str, fmt: str) -> str:
 
 
 def generate_note(
-    url: str, lang: str, prompt: str, provider: str, model: str | None, fmt: str
+    url: str, lang: str, prompt: str,
+    provider: str, model: str | None, fmt: str
 ) -> str:
     llm = create_llm(provider, model)
     text = YouTube(url, lang).get_subtitles()

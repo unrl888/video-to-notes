@@ -57,9 +57,17 @@ const I18N = {
 };
 
 const MODELS = {
-  ollama: ['llama3.2:3b', 'mistral-nemo', 'qwen2.5:7b', 'gemma2:9b'],
+  ollama: [],
   claude: ['claude-haiku-4-5', 'claude-sonnet-4-5', 'claude-opus-4-5'],
 };
+
+const PROMPTS = {
+  Summary: 'Analyze this text and return a brief, clear summary',
+  'Key points': 'Extract the key points from the text as a numbered list',
+  Notes: 'Create detailed notes from the text organized by topic',
+};
+
+const FORMAT_MAP = { MD: 'markdown', TXT: 'txt', JSON: 'json' };
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 function cx(...xs) { return xs.filter(Boolean).join(' '); }
@@ -183,7 +191,7 @@ const __APP_STYLE = `
     --line-strong: rgba(232,232,227,0.28);
     --glass: rgba(232,232,227,0.05);
     --glass-strong: rgba(232,232,227,0.09);
-    --glass-msg: rgba(8,9,11,0.45);
+    --glass-msg: rgba(8,9,11,0.72);
     --invert: #050607;
     --send-bg: rgba(232,232,227,0.94);
     --shadow-glass: 0 30px 60px -20px rgba(0,0,0,0.7);
@@ -197,7 +205,7 @@ const __APP_STYLE = `
     --line-strong: rgba(26,26,28,0.18);
     --glass: rgba(255,255,255,0.38);
     --glass-strong: rgba(255,255,255,0.55);
-    --glass-msg: rgba(255,255,255,0.5);
+    --glass-msg: rgba(255,255,255,0.78);
     --invert: #fafafa;
     --send-bg: rgba(26,26,28,0.88);
     --shadow-glass: 0 1px 0 rgba(255,255,255,0.6) inset, 0 24px 60px -20px rgba(0,0,0,0.18);
@@ -370,7 +378,7 @@ const __APP_STYLE = `
     box-shadow: var(--shadow-glass);
     font-size: 13.5px;
     line-height: 1.65;
-    color: var(--fg-mid);
+    color: var(--fg-strong);
   }
   .msg-bot .head {
     display: flex; align-items: center; gap: 10px;
@@ -757,92 +765,6 @@ const __APP_STYLE = `
   }
 `
 
-// ── Mocked completion ───────────────────────────────────────────────────
-function mockResponse(preset, lang) {
-  const ts = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  const responses = {
-    EN: {
-      Summary: {
-        title: 'How forests breathe',
-        body: (
-          <>
-            <p>A 22-minute walk through the carbon cycle of temperate woodland, narrated with the deliberate pace of someone who has been watching the same trees for forty years.</p>
-            <p>The host frames photosynthesis as a long inhale: slow, structural, and largely invisible to the naked eye. The middle section pivots to soil microbiota — fungi and bacteria — as the exhale that releases what the canopy stored.</p>
-            <p>Closes on a quiet argument: monocultures break the rhythm. Mixed canopies hold it.</p>
-          </>
-        ),
-      },
-      'Key points': {
-        title: 'Six things worth marking',
-        body: (
-          <ul>
-            <li>Forests are net carbon sinks only while growing — mature woodland approaches equilibrium.</li>
-            <li>Mycorrhizal networks redistribute sugars between species, including across genera.</li>
-            <li>Soil respiration accounts for ~60% of ecosystem CO₂ release in temperate biomes.</li>
-            <li>Drought stress increases volatile organic compound emission — visible as the "blue haze".</li>
-            <li>Selective logging can preserve sequestration if rotation exceeds 40 years.</li>
-            <li>The "wood-wide web" is real but contested; current evidence is structural, not behavioural.</li>
-          </ul>
-        ),
-      },
-      Notes: {
-        title: 'Marginalia',
-        body: (
-          <>
-            <p><em>Opening</em> beech the host has measured every spring since 1983. Same ring spacing as their daughter's height chart.</p>
-            <p><em>Verify</em> the 60% soil respiration figure — host cites a 2019 paper but doesn't name it.</p>
-            <p><em>Reading</em> Suzanne Simard's earlier work, plus the recent Karst &amp; Treseder critique of network claims.</p>
-          </>
-        ),
-      },
-      Custom: {
-        title: 'Custom extraction',
-        body: <p>I'll follow your prompt above. For demo purposes, here's a placeholder — wire this up to your model endpoint and the structured output will arrive in the format you selected.</p>,
-      },
-    },
-    RU: {
-      Summary: {
-        title: 'Как дышит лес',
-        body: (
-          <>
-            <p>22-минутная прогулка по углеродному циклу умеренного леса, рассказанная неспешным голосом человека, который сорок лет наблюдает одни и те же деревья.</p>
-            <p>Ведущий описывает фотосинтез как длинный вдох — медленный, структурный, почти невидимый. Середина выпуска переходит к почвенным микроорганизмам — это выдох, возвращающий накопленное.</p>
-            <p>Заключение — тихий аргумент: монокультуры ломают ритм. Смешанные кроны его удерживают.</p>
-          </>
-        ),
-      },
-      'Key points': {
-        title: 'Шесть тезисов',
-        body: (
-          <ul>
-            <li>Лес поглощает углерод только пока растёт — зрелые насаждения приходят к равновесию.</li>
-            <li>Микоризные сети перераспределяют сахара между видами, включая разные роды.</li>
-            <li>Почвенное дыхание даёт около 60% CO₂ в умеренных биомах.</li>
-            <li>Стресс от засухи увеличивает выделение летучих органических — отсюда «голубая дымка».</li>
-            <li>Выборочные рубки сохраняют секвестрацию при ротации &gt; 40 лет.</li>
-            <li>«Лесной интернет» существует, но интерпретации спорны — данные структурные, не поведенческие.</li>
-          </ul>
-        ),
-      },
-      Notes: {
-        title: 'На полях',
-        body: (
-          <>
-            <p><em>Вступление</em> бук, который ведущий измеряет каждую весну с 1983 года. Шаг колец — как отметки роста дочери на косяке.</p>
-            <p><em>Сверить</em> цифру 60% почвенного дыхания — ссылается на статью 2019, но без названия.</p>
-            <p><em>Чтение</em> ранние работы Сюзанны Симард + критика Карста и Тризедер.</p>
-          </>
-        ),
-      },
-      Custom: {
-        title: 'Свой запрос',
-        body: <p>Здесь будет результат по вашему промпту выше. В демо — заглушка; подключите endpoint модели, и структурированный вывод появится в выбранном формате.</p>,
-      },
-    },
-  };
-  const data = responses[lang][preset] || responses[lang].Summary;
-  return { ...data, ts };
-}
 
 // ── App ─────────────────────────────────────────────────────────────────
 function App() {
@@ -875,8 +797,9 @@ function App() {
   const [customSubsLang, setCustomSubsLang] = React.useState('');
   const [showCustomLang, setShowCustomLang] = React.useState(false);
   const [format, setFormat] = React.useState('MD');
-  const [provider, setProvider] = React.useState('claude');
-  const [model, setModel] = React.useState(MODELS.claude[0]);
+  const [provider, setProvider] = React.useState('ollama');
+  const [models, setModels] = React.useState(MODELS);
+  const [model, setModel] = React.useState(MODELS.ollama[0]);
   const [messages, setMessages] = React.useState([]);
   const [busy, setBusy] = React.useState(false);
 
@@ -891,8 +814,22 @@ function App() {
   }, [messages, busy]);
 
   React.useEffect(() => {
-    setModel(MODELS[provider][0]);
+    const list = models[provider];
+    setModel(list && list.length ? list[0] : '');
   }, [provider]);
+
+  React.useEffect(() => {
+    fetch('/api/ollama/models')
+      .then(r => r.json())
+      .then(list => {
+        if (list.length) setModels(m => ({ ...m, ollama: list }));
+      })
+      .catch(() => {});
+    fetch('/api/ollama/status')
+      .then(r => r.json())
+      .then(data => { if (!data.running) setTweak('showOllamaWarning', true); })
+      .catch(() => {});
+  }, []);
 
   const hasMessages = messages.length > 0 || busy;
   const canSend = url.trim().length > 4 && !busy;
@@ -913,11 +850,32 @@ function App() {
     setMessages((m) => [...m, userMsg]);
     setUrl('');
     setBusy(true);
-    setTimeout(() => {
-      const r = mockResponse(preset, t.language);
-      setMessages((m) => [...m, { role: 'bot', ...r, format, model }]);
-      setBusy(false);
-    }, 1600);
+
+    const finalLang = showCustomLang && customSubsLang
+      ? customSubsLang.toLowerCase()
+      : subsLang.toLowerCase();
+    const finalPrompt = preset === 'Custom' ? customPrompt : (PROMPTS[preset] || PROMPTS.Summary);
+    const params = new URLSearchParams({
+      url: userMsg.url, lang: finalLang, prompt: finalPrompt,
+      provider, format: FORMAT_MAP[format] || 'markdown',
+      ...(model ? { model } : {}),
+    });
+
+    fetch(`/api/get_note?${params}`, { method: 'POST' })
+      .then(r => {
+        if (!r.ok) return r.json().then(e => { throw new Error(e.detail || 'server error'); });
+        return r.json();
+      })
+      .then(data => {
+        const ts = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        setMessages(m => [...m, { role: 'bot', text: data.text, ts, format, model }]);
+        setBusy(false);
+      })
+      .catch(err => {
+        const ts = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        setMessages(m => [...m, { role: 'bot', text: `⚠ ${err.message}`, ts, format, model, error: true }]);
+        setBusy(false);
+      });
   };
 
   const onKeyDown = (e) => {
@@ -988,8 +946,10 @@ function App() {
                       <span>{L.note}</span>
                       <span style={{ marginLeft: 'auto', opacity: 0.6 }}>{m.ts} · {m.format}</span>
                     </div>
-                    <h3>{m.title}</h3>
-                    {m.body}
+                    {m.format === 'JSON'
+                      ? <pre style={{ fontSize: '11px', fontFamily: "'JetBrains Mono', monospace", overflowX: 'auto', whiteSpace: 'pre-wrap', margin: 0 }}>{m.text}</pre>
+                      : <div dangerouslySetInnerHTML={{ __html: window.marked.parse(m.text || '') }} />
+                    }
                   </div>
                 )
               ))}
@@ -1078,7 +1038,7 @@ function App() {
                       onChange={(e) => setModel(e.target.value)}
                       aria-label={L.model}
                     >
-                      {MODELS[provider].map((m) => (
+                      {(models[provider] || []).map((m) => (
                         <option key={m} value={m}>{m}</option>
                       ))}
                     </select>
