@@ -6,6 +6,17 @@
     "txt": "Return the response as plain text without any markup.",
     "json": "Return the response strictly as JSON with no extra text: {\"title\": \"...\", \"summary\": \"...\", \"key_points\": [\"...\", \"...\"]}"
   },
+  "lang_names": {
+    "ru": "Russian", "en": "English", "de": "German",
+    "fr": "French", "es": "Spanish", "zh": "Chinese",
+    "it": "Italian", "pt": "Portuguese", "ja": "Japanese",
+    "ko": "Korean", "ar": "Arabic", "tr": "Turkish"
+  },
+  "prompts": {
+    "Summary": "Analyze this text and return a brief, clear summary",
+    "Key points": "Extract the key points from the text as a numbered list",
+    "Notes": "Create detailed notes from the text organized by topic"
+  },
   "providers": {
     "ollama": {
       "models": [],
@@ -13,7 +24,8 @@
     },
     "claude": {
       "models": ["claude-sonnet-4-5", "claude-haiku-4-5-20251001"],
-      "default": "claude-sonnet-4-5"
+      "default": "claude-sonnet-4-5",
+      "max_tokens": 1024
     }
   }
 }

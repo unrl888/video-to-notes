@@ -56,12 +56,9 @@ const I18N = {
   },
 };
 
-const MODELS = {
-  ollama: [],
-  claude: ['claude-haiku-4-5', 'claude-sonnet-4-5', 'claude-opus-4-5'],
-};
+const MODELS = { ollama: [], claude: [] };
 
-const PROMPTS = {
+const PROMPTS_FALLBACK = {
   Summary: 'Analyze this text and return a brief, clear summary',
   'Key points': 'Extract the key points from the text as a numbered list',
   Notes: 'Create detailed notes from the text organized by topic',
@@ -800,6 +797,7 @@ function App() {
   const [provider, setProvider] = React.useState('ollama');
   const [models, setModels] = React.useState(MODELS);
   const [model, setModel] = React.useState(MODELS.ollama[0]);
+  const [prompts, setPrompts] = React.useState(PROMPTS_FALLBACK);
   const [messages, setMessages] = React.useState([]);
   const [busy, setBusy] = React.useState(false);
 
@@ -821,20 +819,26 @@ function App() {
   React.useEffect(() => {
     fetch('/api/ollama/models')
       .then(r => r.json())
-      .then(list => {
-        if (list.length) setModels(m => ({ ...m, ollama: list }));
-      })
+      .then(list => { if (list.length) setModels(m => ({ ...m, ollama: list })); })
       .catch(() => {});
     fetch('/api/ollama/status')
       .then(r => r.json())
       .then(data => { if (!data.running) setTweak('showOllamaWarning', true); })
+      .catch(() => {});
+    fetch('/api/providers')
+      .then(r => r.json())
+      .then(data => { if (data.claude?.models?.length) setModels(m => ({ ...m, claude: data.claude.models })); })
+      .catch(() => {});
+    fetch('/api/prompts')
+      .then(r => r.json())
+      .then(data => { if (Object.keys(data).length) setPrompts(data); })
       .catch(() => {});
   }, []);
 
   const hasMessages = messages.length > 0 || busy;
   const canSend = url.trim().length > 4 && !busy;
 
-  const onSend = () => {
+  const onSend = async () => {
     if (!canSend) return;
     const userMsg = {
       role: 'user',
@@ -854,28 +858,42 @@ function App() {
     const finalLang = showCustomLang && customSubsLang
       ? customSubsLang.toLowerCase()
       : subsLang.toLowerCase();
-    const finalPrompt = preset === 'Custom' ? customPrompt : (PROMPTS[preset] || PROMPTS.Summary);
+    const finalPrompt = preset === 'Custom' ? customPrompt : (prompts[preset] || prompts.Summary);
     const params = new URLSearchParams({
       url: userMsg.url, lang: finalLang, prompt: finalPrompt,
       provider, format: FORMAT_MAP[format] || 'markdown',
       ...(model ? { model } : {}),
     });
 
-    fetch(`/api/get_note?${params}`, { method: 'POST' })
-      .then(r => {
-        if (!r.ok) return r.json().then(e => { throw new Error(e.detail || 'server error'); });
-        return r.json();
-      })
-      .then(data => {
-        const ts = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        setMessages(m => [...m, { role: 'bot', text: data.text, ts, format, model }]);
-        setBusy(false);
-      })
-      .catch(err => {
-        const ts = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        setMessages(m => [...m, { role: 'bot', text: `⚠ ${err.message}`, ts, format, model, error: true }]);
-        setBusy(false);
-      });
+    try {
+      const r = await fetch(`/api/get_note?${params}`, { method: 'POST' });
+      if (!r.ok) {
+        const e = await r.json();
+        throw new Error(e.detail || 'server error');
+      }
+
+      const ts = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      setMessages(m => [...m, { role: 'bot', text: '', ts, format, model }]);
+      setBusy(false);
+
+      const reader = r.body.getReader();
+      const decoder = new TextDecoder();
+      let text = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        text += decoder.decode(value, { stream: true });
+        setMessages(m => {
+          const updated = [...m];
+          updated[updated.length - 1] = { ...updated[updated.length - 1], text };
+          return updated;
+        });
+      }
+    } catch (err) {
+      const ts = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      setMessages(m => [...m, { role: 'bot', text: `⚠ ${err.message}`, ts, format, model, error: true }]);
+      setBusy(false);
+    }
   };
 
   const onKeyDown = (e) => {

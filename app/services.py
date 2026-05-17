@@ -24,19 +24,23 @@ def list_ollama_models() -> list[str]:
 def create_llm(provider: str, model: str | None) -> LLM:
     chosen = model or CONFIG["providers"][provider]["default"]
     if provider == "claude":
-        return ClaudeLLM(model=chosen)
+        return ClaudeLLM(model=chosen, max_tokens=CONFIG["providers"]["claude"]["max_tokens"])
     return OllamaLLM(model=chosen)
 
 
-def build_prompt(prompt: str, fmt: str) -> str:
+def build_prompt(prompt: str, fmt: str, lang: str) -> str:
+    lang_name = CONFIG["lang_names"].get(lang.lower(), lang.upper())
     hint = CONFIG["format_hints"].get(fmt, "")
-    return f"{prompt}\n{hint}\n\n" if hint else f"{prompt}\n\n"
+    instruction = f"Respond entirely in {lang_name}.\n{prompt}"
+    return f"{instruction}\n{hint}\n\n" if hint else f"{instruction}\n\n"
 
 
 def generate_note(
     url: str, lang: str, prompt: str,
     provider: str, model: str | None, fmt: str
-) -> str:
+):
     llm = create_llm(provider, model)
     text = YouTube(url, lang).get_subtitles()
-    return llm.complete(build_prompt(prompt, fmt) + text)
+    prompt = build_prompt(prompt, fmt, lang) + text
+    for chunk in llm.complete(prompt):
+        yield chunk
