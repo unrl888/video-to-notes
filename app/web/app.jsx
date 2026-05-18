@@ -69,6 +69,40 @@ const FORMAT_MAP = { MD: 'markdown', TXT: 'txt', JSON: 'json' };
 // ── Helpers ─────────────────────────────────────────────────────────────
 function cx(...xs) { return xs.filter(Boolean).join(' '); }
 
+function CopyBtn({ text }) {
+  const [copied, setCopied] = React.useState(false);
+  const copy = () => {
+    const t = text || '';
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(t).catch(() => fallback(t));
+    } else {
+      fallback(t);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+  const fallback = (t) => {
+    const el = document.createElement('textarea');
+    el.value = t;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+  };
+  return (
+    <button onClick={copy} style={{
+      appearance: 'none', border: 0, background: 'transparent',
+      color: copied ? 'var(--fg-mid)' : 'var(--fg-faint)',
+      cursor: 'pointer', padding: '0 0 0 10px',
+      font: '500 11px/1 Space Grotesk, sans-serif',
+      transition: 'color 0.15s',
+      position: 'relative', zIndex: 2,
+    }}>
+      {copied ? '✓' : 'copy'}
+    </button>
+  );
+}
+
 function Glyph({ size = 14, opacity = 1 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ opacity }}>
@@ -954,6 +988,7 @@ function App() {
                       <Glyph size={11} opacity={0.7} />
                       <span>{L.note}</span>
                       <span style={{ marginLeft: 'auto', opacity: 0.7 }}>{m.ts} · {m.format}</span>
+                      <CopyBtn text={m.text} />
                     </div>
                     {m.format === 'JSON'
                       ? <pre>{m.text}</pre>
