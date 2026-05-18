@@ -15,8 +15,8 @@ const BG_STORAGE_KEY = 'autonote.customBg.v1';
 // ── Copy ────────────────────────────────────────────────────────────────
 const I18N = {
   EN: {
-    greeting: 'What would you like to capture?',
-    sub: 'Drop a YouTube link — subtitles go in, structured notes come out.',
+    greeting: 'Watch less. Understand more.',
+    sub: 'Let only the essence remain.',
     chips: { Summary: 'Summary', 'Key points': 'Key points', Notes: 'Notes', Custom: 'Custom' },
     urlPlaceholder: 'Paste a YouTube link',
     customPlaceholder: 'Describe what to extract from the subtitles…',
@@ -35,8 +35,8 @@ const I18N = {
     tagline: 'subtitles → notes',
   },
   RU: {
-    greeting: 'Что нужно зафиксировать?',
-    sub: 'Вставьте ссылку YouTube — на входе субтитры, на выходе заметка.',
+    greeting: 'Смотри меньше. Понимай больше.',
+    sub: 'Пусть останется только суть.',
     chips: { Summary: 'Кратко', 'Key points': 'Тезисы', Notes: 'Заметки', Custom: 'Свой' },
     urlPlaceholder: 'Ссылка YouTube',
     customPlaceholder: 'Опишите, что извлечь из субтитров…',
