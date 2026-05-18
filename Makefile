@@ -23,6 +23,7 @@ up-ollama:
 
 down:
 	$(COMPOSE) --profile ollama down
+	@if [ -f .ollama.pid ]; then kill $$(cat .ollama.pid) 2>/dev/null; rm -f .ollama.pid; fi
 
 logs:
 	$(COMPOSE) logs -f

@@ -224,3 +224,6 @@ __marimo__/
 
 # Local test outputs
 test.txt
+
+# Ollama PID file (created by make up-ollama)
+.ollama.pid
